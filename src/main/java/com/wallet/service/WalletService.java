@@ -56,7 +56,7 @@ public class WalletService {
 
     @Transactional
     public WalletResponse deposit(Long walletId, BigDecimal amount) {
-        Wallet wallet = walletRepository.findById(walletId)
+        Wallet wallet = walletRepository.findByIdWithLock(walletId)
                 .orElseThrow(() -> new ResourceNotFoundException("Wallet not found with id: " + walletId));
 
         wallet.setBalance(wallet.getBalance().add(amount));

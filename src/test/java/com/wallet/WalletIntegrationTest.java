@@ -539,6 +539,49 @@ class WalletIntegrationTest {
     }
 
     // ─────────────────────────────────────────────────────────────
+    // 5.5 Deposit
+    // ─────────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("5.5.1 Deposit increases balance and records DEPOSIT transaction")
+    void deposit_success() throws Exception {
+        Long walletId = createUserWithBalance("dep@t.com", new BigDecimal("100.00"));
+
+        mvc.perform(post("/wallets/" + walletId + "/deposit")
+                        .param("amount", "50.00"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.balance").value(150.0000));
+
+        assertThat(getBalance(walletId)).isEqualByComparingTo("150.0000");
+        assertThat(transactionRepository.findAll()).anyMatch(t ->
+                t.getStatus() == TransactionStatus.DEPOSIT
+                        && t.getToWalletId().equals(walletId)
+                        && t.getAmount().compareTo(new BigDecimal("50.00")) == 0);
+    }
+
+    @Test
+    @DisplayName("5.5.2 Deposit zero or negative amount → 400")
+    void deposit_invalidAmount() throws Exception {
+        Long walletId = createUserWithBalance("depneg@t.com", new BigDecimal("100.00"));
+
+        mvc.perform(post("/wallets/" + walletId + "/deposit")
+                        .param("amount", "0"))
+                .andExpect(status().isBadRequest());
+
+        mvc.perform(post("/wallets/" + walletId + "/deposit")
+                        .param("amount", "-10"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("5.5.3 Deposit to non-existent wallet → 404")
+    void deposit_walletNotFound() throws Exception {
+        mvc.perform(post("/wallets/9999/deposit")
+                        .param("amount", "50.00"))
+                .andExpect(status().isNotFound());
+    }
+
+    // ─────────────────────────────────────────────────────────────
     // 6. Transactions endpoint
     // ─────────────────────────────────────────────────────────────
 

@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS wallets (
 
 CREATE TABLE IF NOT EXISTS transactions (
     id               BIGSERIAL PRIMARY KEY,
-    from_wallet_id   BIGINT,                   -- nullable: NULL for DEPOSIT (external funds)
-    to_wallet_id     BIGINT         NOT NULL,
+    from_wallet_id   BIGINT         REFERENCES wallets(id), -- nullable: NULL for DEPOSIT (external funds)
+    to_wallet_id     BIGINT         NOT NULL REFERENCES wallets(id),
     amount           NUMERIC(19, 4) NOT NULL,
     status           VARCHAR(10)    NOT NULL,
     idempotency_key  VARCHAR(64)    UNIQUE,
