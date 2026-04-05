@@ -1,65 +1,83 @@
-# Digital Wallet
+# Digital Wallet — Java 21 Backend
 
-A production-ready digital wallet system featuring atomic transfers, concurrency control, and a modern dashboard.
+A production-style digital wallet application with a **Java 21 / Spring Boot 3.3** backend, **PostgreSQL** database, and **React** frontend. Full Docker Compose setup included.
 
-## Quick Start (Docker)
+## Architecture
 
-The easiest way to run the full stack (Backend, Frontend, and PostgreSQL):
+| Component | Technology | Port |
+|-----------|------------|------|
+| **Backend** | Java 21, Spring Boot 3.3, Spring Data JPA | `8080` |
+| **Database** | PostgreSQL 16 | `5432` |
+| **Frontend** | React 18 + Vite (Nginx) | `3000` |
+
+## Features
+
+- **User Management** — Create users, each auto-assigned a wallet
+- **Wallet Operations** — View balances, deposit funds
+- **Money Transfers** — Transfer between wallets with pessimistic locking (deadlock-safe ordered locking)
+- **Idempotency** — Transfer requests support idempotency keys
+- **Optimistic Concurrency** — Version-based concurrency control on wallets
+- **Transaction History** — Full audit trail of deposits, transfers, and failures
+- **Global Error Handling** — Consistent error responses via exception handler
+
+## Quick Start (Docker Compose)
 
 ```bash
 docker compose up --build
 ```
 
-- **Frontend**: [http://localhost:3000](http://localhost:3000)
-- **Backend API**: [http://localhost:8080](http://localhost:8080)
-- **Database**: `localhost:5432`
+Once running:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8080
+- **PostgreSQL**: `localhost:5432` (user: `wallet_user`, pass: `wallet_pass`)
 
----
+## API Endpoints
 
-## Tech Stack
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/users` | Create a new user (auto-creates wallet) |
+| `GET` | `/users` | List all users |
+| `GET` | `/users/{id}` | Get user by ID |
+| `POST` | `/wallets` | Create a new wallet |
+| `GET` | `/wallets/{id}` | Get wallet by ID |
+| `POST` | `/wallets/{id}/deposit?amount=100` | Deposit funds |
+| `POST` | `/transfer` | Transfer between wallets |
+| `GET` | `/transactions?limit=20` | Recent transactions |
 
-- **Backend**: Java 21, Spring Boot 3.3, Spring Data JPA
-- **Frontend**: React 18, Vite, Axios
-- **Database**: PostgreSQL 16
-- **Infrastructure**: Docker, Docker Compose
+## Project Structure
 
----
+```
+digital-wallet/
+├── docker-compose.yml
+├── Dockerfile
+├── pom.xml
+├── src/
+│   └── main/java/com/wallet/
+│       ├── config/              # App configuration
+│       ├── controller/          # API endpoints
+│       ├── dto/                 # Request/Response models
+│       ├── exception/           # Custom exceptions
+│       ├── model/               # JPA entity models
+│       ├── repository/          # Spring Data repositories
+│       └── service/             # Business logic
+└── frontend/
+    ├── src/                     # React components & API layer
+    ├── nginx.conf               # Production proxy config
+    └── Dockerfile
+```
 
-## Key Features & Design
+## Local Development (without Docker)
 
-### Atomic Transfers
-- **Pessimistic Locking**: Uses `SELECT FOR UPDATE` to prevent race conditions during balance updates.
-- **Deadlock Prevention**: Always locks wallets in ascending ID order.
-- **ACID Compliance**: Transactions and ledger entries are committed atomically.
-- **Idempotency**: Supports `idempotencyKey` to prevent duplicate processing of the same request.
+### Backend
+```bash
+mvn spring-boot:run
+```
+Requires a PostgreSQL instance at `localhost:5432` with database `digital_wallet`.
 
-### API Highlights
-
-| Endpoint | Method | Description |
-| :--- | :--- | :--- |
-| `/users` | `POST` | Create user & automatic wallet |
-| `/wallets/{id}` | `GET` | Retrieve balance & details |
-| `/wallets/{id}/deposit` | `POST` | Deposit funds into a wallet |
-| `/transfer` | `POST` | Atomic money transfer between wallets |
-| `/transactions` | `GET` | List recent transaction history |
-
----
-
-## Local Development
-
-### Backend (Java 21)
-1. Ensure PostgreSQL is running.
-2. Configure `application.properties` or set env vars for DB connection.
-3. Run:
-   ```bash
-   mvn spring-boot:run
-   ```
-
-### Frontend (Node.js)
+### Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-
----
+Dev server runs at `http://localhost:3000` with API proxy to `http://localhost:8080`.
