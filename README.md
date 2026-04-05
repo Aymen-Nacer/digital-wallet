@@ -81,3 +81,6 @@ npm install
 npm run dev
 ```
 Dev server runs at `http://localhost:3000` with API proxy to `http://localhost:8080`.
+
+
+![Image](https://github.com/user-attachments/assets/92de5a33-7ef5-4145-a1d7-b7e7b86c3fc3)
