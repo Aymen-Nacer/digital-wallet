@@ -1,4 +1,4 @@
-# Digital Wallet — Java 21 Backend
+# Digital Wallet — Spring Boot
 
 A production-style digital wallet application with a **Java 21 / Spring Boot 3.3** backend, **PostgreSQL** database, and **React** frontend. Full Docker Compose setup included.
 
